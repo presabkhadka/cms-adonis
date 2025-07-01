@@ -39,6 +39,7 @@ router.use([() => import('@adonisjs/core/bodyparser_middleware')])
  * the routes or the routes group.
  */
 export const middleware = router.named({
-  authuser: () => import('#middleware/authuser_middleware'),
-  userAuth: () => import('#middleware/user_auth_middleware')
+  auth: () => import('#middleware/auth_middleware'),
 })
+
+console.log('✅ Kernel loaded')

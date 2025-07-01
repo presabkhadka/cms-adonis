@@ -7,6 +7,8 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export default class UserController {
+  
+
   public async signup({ request, response }: HttpContext) {
     try {
       let { email, password, name } = request.only(['email', 'password', 'name'])
@@ -88,6 +90,29 @@ export default class UserController {
       })
     } catch (error) {
       return response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async userDetails(ctx: HttpContext) {
+    try {
+      let { email } = ctx
+
+      let userDetails = await prisma.users.findFirst({
+        where: {
+          email,
+        },
+        include: {
+          UserRoles: true,
+        },
+      })
+
+      ctx.response.status(200).json({
+        userDetails,
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
         msg: error instanceof Error ? error.message : 'Something went wrong with the server',
       })
     }
