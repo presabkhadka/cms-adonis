@@ -54,7 +54,14 @@
     "@adonisjs/core": "^6.18.0",
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/lucid": "^21.6.1",
+    "@prisma/client": "^6.10.1",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.10",
     "@vinejs/vine": "^3.0.1",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.10.1",
     "reflect-metadata": "^0.2.2"
   },
   "hotHook": {
