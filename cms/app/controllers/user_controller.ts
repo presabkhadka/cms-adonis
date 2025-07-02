@@ -7,10 +7,14 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export default class UserController {
-  
-
   public async signup({ request, response }: HttpContext) {
     try {
+      let defaultRole = await prisma.roles.findFirst({
+        where: {
+          name: 'BASIC',
+        },
+      })
+
       let { email, password, name } = request.only(['email', 'password', 'name'])
 
       if (!email || !password || !name) {
@@ -39,6 +43,13 @@ export default class UserController {
           email,
           password: hashedPassword,
           status: 'ACTIVE',
+          UserRoles: {
+            create: [
+              {
+                role_id: defaultRole!.id,
+              },
+            ],
+          },
         },
       })
 
@@ -110,6 +121,92 @@ export default class UserController {
 
       ctx.response.status(200).json({
         userDetails,
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async editUserDetails({ params, request, response }: HttpContext) {
+    try {
+      let userId = Number(params.userId)
+      if (!userId) {
+        return response.status(400).json({
+          msg: 'No user id found in params',
+        })
+      }
+
+      let name = request.input('name')
+      let email = request.input('email')
+      let image = request.file('avatar')
+      let avatar = image ? `/uploads/${image.fileName}` : null
+      let fieldsToUpdate: Record<string, any> = {}
+
+      if (name) fieldsToUpdate.name = name
+      if (email) fieldsToUpdate.email = email
+      if (avatar) fieldsToUpdate.avatar = avatar
+
+      let userExists = await prisma.users.findFirst({
+        where: {
+          id: userId,
+        },
+      })
+
+      if (!userExists) {
+        return response.status(404).json({
+          msg: 'No user with such id found in db',
+        })
+      }
+
+      await prisma.users.update({
+        where: {
+          id: userId,
+        },
+        data: fieldsToUpdate,
+      })
+
+      response.status(200).json({
+        msg: 'User updated successfully',
+      })
+    } catch (error) {
+      return response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async deleteUserDetails(ctx: HttpContext) {
+    try {
+      let userId = Number(ctx.params.userId)
+
+      if (!userId) {
+        return ctx.response.status(400).json({
+          msg: 'No user id found in params',
+        })
+      }
+
+      let existingUser = await prisma.users.findFirst({
+        where: {
+          id: userId,
+        },
+      })
+
+      if (!existingUser) {
+        return ctx.response.status(404).json({
+          msg: 'No user with this id found',
+        })
+      }
+
+      await prisma.users.delete({
+        where: {
+          id: userId,
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'User deleted successfully',
       })
     } catch (error) {
       return ctx.response.status(500).json({
