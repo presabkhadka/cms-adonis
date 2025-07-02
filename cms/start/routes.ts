@@ -7,6 +7,7 @@ import ContentsController from '#controllers/contents_controller'
 import CommentsController from '#controllers/comments_controller'
 import CategoriesController from '#controllers/categories_controller'
 import RevisionsController from '#controllers/revisions_controller'
+import SettingsController from '#controllers/settings_controller'
 
 router.post('/api/signup', (ctx) => new UserController().signup(ctx))
 router.post('/api/login', [UserController, 'login'])
@@ -63,3 +64,13 @@ router
   .use(middleware.auth())
 router.get('/api/revision/all/:contentId', (ctx) => new RevisionsController().fetchRevision(ctx))
 router.get('/api/revision/:revisionId', (ctx) => new RevisionsController().fetchSingleRevision(ctx))
+router.get('/api/settings', (ctx) => new SettingsController().fetchSetting(ctx))
+router
+  .post('/api/settings/create', (ctx) => new SettingsController().createSetting(ctx))
+  .use(middleware.auth())
+router
+  .patch('/api/settings/update/:settingsId', (ctx) => new SettingsController().editSettings(ctx))
+  .use(middleware.auth())
+router
+  .delete('/api/settings/delete/:settingsId', (ctx) => new SettingsController().deleteSettings(ctx))
+  .use(middleware.auth())
