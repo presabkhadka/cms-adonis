@@ -106,6 +106,14 @@ export default class ContentsController {
         })
       }
 
+      let email = ctx.email
+
+      let user = await prisma.users.findFirst({
+        where: {
+          email,
+        },
+      })
+
       let contentExists = await prisma.content.findFirst({
         where: {
           id: contentId,
@@ -148,6 +156,21 @@ export default class ContentsController {
       if (category_id) fieldsToUpdate.category_id = category_id
       if (image) fieldsToUpdate.image = image
       if (title) fieldsToUpdate.title = title
+
+      if (contentExists.author_id !== user!.id) {
+        return ctx.response.status(409).json({
+          msg: "Cannot edit other author's content",
+        })
+      }
+
+      await prisma.revisions.create({
+        data: {
+          body: contentExists.body,
+          title: contentExists.title,
+          author_id: user!.id,
+          content_id: contentId,
+        },
+      })
 
       await prisma.content.update({
         where: {

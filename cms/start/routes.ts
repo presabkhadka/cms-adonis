@@ -4,6 +4,9 @@ import { middleware } from '#start/kernel'
 import AdminController from '#controllers/admin_controller'
 import TagsController from '#controllers/tags_controller'
 import ContentsController from '#controllers/contents_controller'
+import CommentsController from '#controllers/comments_controller'
+import CategoriesController from '#controllers/categories_controller'
+import RevisionsController from '#controllers/revisions_controller'
 
 router.post('/api/signup', (ctx) => new UserController().signup(ctx))
 router.post('/api/login', [UserController, 'login'])
@@ -36,3 +39,27 @@ router
 router
   .delete('/api/content/delete/:contentId', (ctx) => new ContentsController().deleteContent(ctx))
   .use(middleware.auth())
+router
+  .post('/api/comment/create/:contentId', (ctx) => new CommentsController().addComment(ctx))
+  .use(middleware.auth())
+router.get('/api/comment/fetch/:contentId', (ctx) => new CommentsController().fetchComment(ctx))
+router
+  .patch('/api/comment/update/:commentId', (ctx) => new CommentsController().editComment(ctx))
+  .use(middleware.auth())
+router
+  .delete('/api/comment/delete/:commentId', (ctx) => new CommentsController().deleteComment(ctx))
+  .use(middleware.auth())
+router
+  .post('/api/category/create', (ctx) => new CategoriesController().createCategory(ctx))
+  .use(middleware.auth())
+router.get('/api/category/fetch', (ctx) => new CategoriesController().fetchCategory(ctx))
+router
+  .patch('/api/category/update/:categoryId', (ctx) => new CategoriesController().editCategory(ctx))
+  .use(middleware.auth())
+router
+  .delete('/api/category/delete/:categoryId', (ctx) =>
+    new CategoriesController().deleteCateogry(ctx)
+  )
+  .use(middleware.auth())
+router.get('/api/revision/all/:contentId', (ctx) => new RevisionsController().fetchRevision(ctx))
+router.get('/api/revision/:revisionId', (ctx) => new RevisionsController().fetchSingleRevision(ctx))
