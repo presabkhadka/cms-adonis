@@ -3,6 +3,9 @@ import prisma from '#services/Prisma'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
+import app from '@adonisjs/core/services/app'
+import path from 'path'
+import { unlink } from 'fs/promises'
 
 dotenv.config()
 
@@ -140,13 +143,19 @@ export default class UserController {
 
       let name = request.input('name')
       let email = request.input('email')
-      let image = request.file('avatar')
-      let avatar = image ? `/uploads/${image.fileName}` : null
+      let avatarImage = request.file('avatar', {
+        size: '5mb',
+        extnames: ['jpg', 'png', 'jpeg'],
+      })
+      await avatarImage?.move(app.makePath('storage/uploads'))
+      let avatar = avatarImage ? `./storage/uploads/${avatarImage.fileName}` : null
       let fieldsToUpdate: Record<string, any> = {}
 
       if (name) fieldsToUpdate.name = name
       if (email) fieldsToUpdate.email = email
-      if (avatar) fieldsToUpdate.avatar = avatar
+      if (avatar) {
+        fieldsToUpdate.avatar = avatar
+      }
 
       let userExists = await prisma.users.findFirst({
         where: {
@@ -160,6 +169,14 @@ export default class UserController {
         })
       }
 
+      if (userExists.avatar && userExists.avatar.startsWith('./storage/uploads/')) {
+        const oldAvatarPath = path.join(app.makePath(), userExists.avatar)
+        try {
+          await unlink(oldAvatarPath)
+        } catch (err) {
+          console.warn('Failed to delete old avatar:', err.message)
+        }
+      }
       await prisma.users.update({
         where: {
           id: userId,
