@@ -33,3 +33,6 @@ router.get('/api/content/fetch', (ctx) => new ContentsController().fetchContent(
 router
   .patch('/api/content/update/:contentId', (ctx) => new ContentsController().editContent(ctx))
   .use(middleware.auth())
+router
+  .delete('/api/content/delete/:contentId', (ctx) => new ContentsController().deleteContent(ctx))
+  .use(middleware.auth())

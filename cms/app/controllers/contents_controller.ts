@@ -165,4 +165,55 @@ export default class ContentsController {
       })
     }
   }
+
+  public async deleteContent(ctx: HttpContext) {
+    try {
+      let contentId = Number(ctx.params.contentId)
+      if (!contentId) {
+        return ctx.response.status(400).json({
+          msg: 'No content id present in params',
+        })
+      }
+
+      let email = ctx.email
+
+      let user = await prisma.users.findFirst({
+        where: {
+          email,
+        },
+      })
+
+      let contentExists = await prisma.content.findFirst({
+        where: {
+          id: contentId,
+        },
+      })
+
+      if (!contentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No content with such id found',
+        })
+      }
+
+      if (contentExists.author_id !== user!.id) {
+        return ctx.response.status(409).json({
+          msg: 'Cannot delete other authors content',
+        })
+      }
+
+      await prisma.content.delete({
+        where: {
+          id: contentId,
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Content deleted successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
 }
