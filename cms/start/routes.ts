@@ -74,3 +74,18 @@ router
 router
   .delete('/api/settings/delete/:settingsId', (ctx) => new SettingsController().deleteSettings(ctx))
   .use(middleware.auth())
+router
+  .get('/api/admin/total-content', (ctx) => new AdminController().totalContents(ctx))
+  .use(middleware.auth())
+router
+  .get('/api/admin/total-users', (ctx) => new AdminController().totalUsers(ctx))
+  .use(middleware.auth())
+router
+  .get('/api/admin/total-categories', (ctx) => new AdminController().totalCategories(ctx))
+  .use(middleware.auth())
+router
+  .patch('/api/admin/content/publish/:contentId', (ctx) => new AdminController().publishContent(ctx))
+  .use(middleware.auth())
+router
+  .patch('/api/admin/content/draft/:contentId', (ctx) => new AdminController().draftContent(ctx))
+  .use(middleware.auth())

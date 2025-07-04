@@ -1,5 +1,6 @@
 import prisma from '#services/Prisma'
 import type { HttpContext } from '@adonisjs/core/http'
+import app from '@adonisjs/core/services/app'
 
 export default class ContentsController {
   public async createContent(ctx: HttpContext) {
@@ -24,7 +25,7 @@ export default class ContentsController {
           msg: 'A content image is required to create a content',
         })
       }
-
+      await contentImage.move(app.makePath('storage/uploads'))
       let content = `./storage/uploads/${contentImage.fileName}`
 
       let email = ctx.email
@@ -130,6 +131,7 @@ export default class ContentsController {
       let slug = ctx.request.input('slug')
       let body = ctx.request.input('body')
       let contentImage = ctx.request.file('image')
+      await contentImage?.move(app.makePath('storage/uploads'))
       let image = contentImage ? `./storage/uploads/${contentImage.fileName}` : null
       let category_id = Number(ctx.request.input('category_id'))
 

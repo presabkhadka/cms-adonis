@@ -58,11 +58,55 @@ export default class AdminController {
 
   public async viewAllUser(ctx: HttpContext) {
     try {
-      let users = await prisma.users.findMany({
+      let finalUser = await prisma.users.findMany({
         include: {
           UserRoles: true,
         },
       })
+
+      if (!finalUser) {
+        return ctx.response.status(404).json({
+          msg: 'No users found in db',
+        })
+      }
+
+      let users = finalUser.filter((x) => x.UserRoles.some((role) => role.role_id === 1))
+
+      ctx.response.status(200).json({
+        users,
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async totalContents(ctx: HttpContext) {
+    try {
+      let contents = await prisma.content.findMany({})
+
+      if (!contents) {
+        return ctx.response.status(404).json({
+          msg: 'No any contents found',
+        })
+      }
+
+      let totalContents = contents.length
+
+      ctx.response.status(200).json({
+        totalContents,
+      })
+    } catch (error) {
+      ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async totalUsers(ctx: HttpContext) {
+    try {
+      let users = await prisma.users.findMany({})
 
       if (!users) {
         return ctx.response.status(404).json({
@@ -70,8 +114,124 @@ export default class AdminController {
         })
       }
 
+      let totalUsers = users.length
+
       ctx.response.status(200).json({
-        users,
+        totalUsers,
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async totalCategories(ctx: HttpContext) {
+    try {
+      let categories = await prisma.categories.findMany({})
+
+      if (!categories) {
+        return ctx.response.status(404).json({
+          msg: 'No categories found in db',
+        })
+      }
+
+      let totalCategories = categories.length
+
+      ctx.response.status(200).json({
+        totalCategories,
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Somethingw went wrong with the server',
+      })
+    }
+  }
+
+  public async publishContent(ctx: HttpContext) {
+    try {
+      let contentId = Number(ctx.params.contentId)
+      if (!contentId) {
+        return ctx.response.status(400).json({
+          msg: 'No content id present in the params',
+        })
+      }
+
+      let contentExists = await prisma.content.findFirst({
+        where: {
+          id: contentId,
+        },
+      })
+
+      if (!contentExists) {
+        return ctx.response.status(404).json({
+          msg: 'Content with such id not found in db',
+        })
+      }
+
+      if (contentExists.status === 'PUBLISHED') {
+        return ctx.response.status(400).json({
+          msg: 'Content is already published',
+        })
+      }
+
+      await prisma.content.update({
+        where: {
+          id: contentId,
+        },
+        data: {
+          status: 'PUBLISHED',
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Content published successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Somethign went wrong with the server',
+      })
+    }
+  }
+
+  public async draftContent(ctx: HttpContext) {
+    try {
+      let contentId = Number(ctx.params.contentId)
+      if (!contentId) {
+        return ctx.response.status(400).json({
+          msg: 'No content id present in the params',
+        })
+      }
+
+      let contentExists = await prisma.content.findFirst({
+        where: {
+          id: contentId,
+        },
+      })
+
+      if (!contentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No content with such id found',
+        })
+      }
+
+      if (contentExists.status === 'DRAFT') {
+        return ctx.response.status(400).json({
+          msg: 'Content is already in draft state',
+        })
+      }
+
+      await prisma.content.update({
+        where: {
+          id: contentId,
+        },
+        data: {
+          status: 'DRAFT',
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Content status set to draft',
       })
     } catch (error) {
       return ctx.response.status(500).json({
