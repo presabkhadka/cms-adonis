@@ -75,7 +75,7 @@ router
   .delete('/api/settings/delete/:settingsId', (ctx) => new SettingsController().deleteSettings(ctx))
   .use(middleware.auth())
 router
-  .get('/api/admin/total-content', (ctx) => new AdminController().totalContents(ctx))
+  .get('/api/admin/total-content', (ctx) => new AdminController().viewAllContents(ctx))
   .use(middleware.auth())
 router
   .get('/api/admin/total-users', (ctx) => new AdminController().totalUsers(ctx))
@@ -84,8 +84,29 @@ router
   .get('/api/admin/total-categories', (ctx) => new AdminController().totalCategories(ctx))
   .use(middleware.auth())
 router
-  .patch('/api/admin/content/publish/:contentId', (ctx) => new AdminController().publishContent(ctx))
+  .patch('/api/admin/content/publish/:contentId', (ctx) =>
+    new AdminController().publishContent(ctx)
+  )
   .use(middleware.auth())
 router
   .patch('/api/admin/content/draft/:contentId', (ctx) => new AdminController().draftContent(ctx))
+  .use(middleware.auth())
+router
+  .delete('/api/admin/content/delete/:contentId', (ctx) => new AdminController().deleteContent(ctx))
+  .use(middleware.auth())
+router
+  .get('/api/admin/comments', (ctx) => new AdminController().loadComment(ctx))
+  .use(middleware.auth())
+router
+  .patch('/api/admin/comment/approve/:commentId', (ctx) =>
+    new AdminController().approveComment(ctx)
+  )
+  .use(middleware.auth())
+router
+  .patch('/api/admin/comment/reject/:commentId', (ctx) => new AdminController().rejectComment(ctx))
+  .use(middleware.auth())
+router
+  .delete('/api/admin/comment/delete/:commentId', (ctx) =>
+    new AdminController().deleteCommentAdmin(ctx)
+  )
   .use(middleware.auth())

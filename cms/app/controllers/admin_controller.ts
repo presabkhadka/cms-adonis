@@ -239,4 +239,208 @@ export default class AdminController {
       })
     }
   }
+
+  public async viewAllContents(ctx: HttpContext) {
+    try {
+      let contents = await prisma.content.findMany({})
+      if (!contents) {
+        return ctx.response.status(404).json({
+          msg: 'No contents found in db',
+        })
+      }
+
+      ctx.response.status(200).json({
+        contents,
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong',
+      })
+    }
+  }
+
+  public async deleteContent(ctx: HttpContext) {
+    try {
+      let contentId = Number(ctx.params.contentId)
+      if (!contentId) {
+        return ctx.response.status(400).json({
+          msg: 'No content id present in the params',
+        })
+      }
+
+      let contentExists = await prisma.content.findFirst({
+        where: {
+          id: contentId,
+        },
+      })
+
+      if (!contentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No content with such id found',
+        })
+      }
+
+      await prisma.content.delete({
+        where: {
+          id: contentId,
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Content deleted successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async loadComment(ctx: HttpContext) {
+    try {
+      let comments = await prisma.comments.findMany({})
+      if (!comments) {
+        return ctx.response.status(404).json({
+          msg: 'No comments found',
+        })
+      }
+
+      ctx.response.status(200).json({
+        comments,
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log('Error', error.message)
+      }
+    }
+  }
+
+  public async approveComment(ctx: HttpContext) {
+    try {
+      let commentId = Number(ctx.params.commentId)
+      if (!commentId) {
+        return ctx.response.status(400).json({
+          msg: 'No comment id present in the params',
+        })
+      }
+
+      let commentExists = await prisma.comments.findFirst({
+        where: {
+          id: commentId,
+        },
+      })
+
+      if (!commentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No comment with such id found',
+        })
+      }
+
+      if (commentExists.status === 'APPROVED') {
+        return ctx.response.status(400).json({
+          msg: 'Comment is already approved',
+        })
+      }
+
+      await prisma.comments.update({
+        where: {
+          id: commentId,
+        },
+        data: {
+          status: 'APPROVED',
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Comment approved',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async rejectComment(ctx: HttpContext) {
+    try {
+      let commentId = Number(ctx.params.commentId)
+      if (!commentId) {
+        return ctx.response.status(400).json({
+          msg: 'No comment id present in the params',
+        })
+      }
+
+      let commentExists = await prisma.comments.findFirst({
+        where: {
+          id: commentId,
+        },
+      })
+
+      if (!commentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No comments with such id found',
+        })
+      }
+
+      if (commentExists.status === 'REJECTED') {
+        return ctx.response.status(400).json({
+          msg: 'Comment is already rejected',
+        })
+      }
+
+      await prisma.comments.update({
+        where: {
+          id: commentId,
+        },
+        data: {
+          status: 'REJECTED',
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Comment rejected successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async deleteCommentAdmin(ctx: HttpContext) {
+    try {
+      let commentId = Number(ctx.params.commentId)
+      if (!commentId) {
+        return ctx.response.status(400).json({
+          msg: 'No comment id present in the params',
+        })
+      }
+
+      let commentExists = await prisma.comments.findFirst({
+        where: {
+          id: commentId,
+        },
+      })
+
+      if (!commentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No comments with such id found',
+        })
+      }
+
+      await prisma.comments.delete({
+        where: {
+          id: commentId,
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Comment deleted successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
 }
