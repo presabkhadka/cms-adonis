@@ -75,7 +75,10 @@ router
   .delete('/api/settings/delete/:settingsId', (ctx) => new SettingsController().deleteSettings(ctx))
   .use(middleware.auth())
 router
-  .get('/api/admin/total-content', (ctx) => new AdminController().viewAllContents(ctx))
+  .get('/api/admin/contents', (ctx) => new AdminController().viewAllContents(ctx))
+  .use(middleware.auth())
+router
+  .get('/api/admin/total-content', (ctx) => new AdminController().totalContents(ctx))
   .use(middleware.auth())
 router
   .get('/api/admin/total-users', (ctx) => new AdminController().totalUsers(ctx))
